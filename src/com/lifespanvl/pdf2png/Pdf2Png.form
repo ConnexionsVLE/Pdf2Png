@@ -26,10 +26,10 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jPanel_selectFile" min="-2" max="-2" attributes="0"/>
-                  <Component id="jPanel_convertFile" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jPanel_selectOutput" alignment="0" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="jPanel_selectFile" max="32767" attributes="0"/>
+                  <Component id="jPanel_selectOutput" alignment="0" max="32767" attributes="0"/>
+                  <Component id="jPanel_convertFile" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -62,7 +62,7 @@
                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                           <Component id="jTextField_pdfFile" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="jButton_selectFile" min="-2" max="-2" attributes="0"/>
+                          <Component id="jButton_selectPdfFile" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="jLabel_pdfFile" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -78,7 +78,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jTextField_pdfFile" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jButton_selectFile" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButton_selectPdfFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -105,7 +105,7 @@
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="jTextField_pdfFileFocusGained"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton_selectFile">
+        <Component class="javax.swing.JButton" name="jButton_selectPdfFile">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Dialog" size="14" style="1"/>
@@ -122,7 +122,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton_selectFileActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton_selectPdfFileActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
@@ -137,7 +137,7 @@
                   <Component id="jButton_convertFile" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="jLabel_fileWarning" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="342" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -183,7 +183,6 @@
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="0" green="0" red="ff" type="rgb"/>
             </Property>
-            <Property name="horizontalAlignment" type="int" value="11"/>
             <Property name="text" type="java.lang.String" value="No pdf file was selected"/>
           </Properties>
         </Component>

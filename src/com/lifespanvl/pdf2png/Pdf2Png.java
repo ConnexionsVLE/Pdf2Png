@@ -1,22 +1,32 @@
 package com.lifespanvl.pdf2png;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 public class Pdf2Png extends JFrame
 {
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    public static final String PATH_FILE = "path.txt";
+    public static final int RENDER_DPI = 100; // 72 is the default and doesn't look so great
     
-    private String defaultPath;
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    public static final String SELECT_PATH_FILE = "select_path.txt";
+    public static final String OUTPUT_PATH_FILE = "output_path.txt";
+    
+    private String selectPath;
+    private String filePath;
+    private String outputPath;
     
     public Pdf2Png()
     {
@@ -37,7 +47,7 @@ public class Pdf2Png extends JFrame
         jPanel_selectFile = new javax.swing.JPanel();
         jLabel_pdfFile = new javax.swing.JLabel();
         jTextField_pdfFile = new javax.swing.JTextField();
-        jButton_selectFile = new javax.swing.JButton();
+        jButton_selectPdfFile = new javax.swing.JButton();
         jPanel_convertFile = new javax.swing.JPanel();
         jButton_convertFile = new javax.swing.JButton();
         jLabel_fileWarning = new javax.swing.JLabel();
@@ -62,16 +72,16 @@ public class Pdf2Png extends JFrame
             }
         });
 
-        jButton_selectFile.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
-        jButton_selectFile.setText("Select");
-        jButton_selectFile.setMaximumSize(new java.awt.Dimension(90, 35));
-        jButton_selectFile.setMinimumSize(new java.awt.Dimension(90, 35));
-        jButton_selectFile.setPreferredSize(new java.awt.Dimension(90, 35));
-        jButton_selectFile.addActionListener(new java.awt.event.ActionListener()
+        jButton_selectPdfFile.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jButton_selectPdfFile.setText("Select");
+        jButton_selectPdfFile.setMaximumSize(new java.awt.Dimension(90, 35));
+        jButton_selectPdfFile.setMinimumSize(new java.awt.Dimension(90, 35));
+        jButton_selectPdfFile.setPreferredSize(new java.awt.Dimension(90, 35));
+        jButton_selectPdfFile.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                jButton_selectFileActionPerformed(evt);
+                jButton_selectPdfFileActionPerformed(evt);
             }
         });
 
@@ -86,7 +96,7 @@ public class Pdf2Png extends JFrame
                         .addGap(6, 6, 6)
                         .addComponent(jTextField_pdfFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton_selectFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jButton_selectPdfFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel_pdfFile))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -98,7 +108,7 @@ public class Pdf2Png extends JFrame
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel_selectFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField_pdfFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton_selectFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton_selectPdfFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -117,7 +127,6 @@ public class Pdf2Png extends JFrame
 
         jLabel_fileWarning.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
         jLabel_fileWarning.setForeground(new java.awt.Color(255, 0, 0));
-        jLabel_fileWarning.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jLabel_fileWarning.setText("No pdf file was selected");
 
         javax.swing.GroupLayout jPanel_convertFileLayout = new javax.swing.GroupLayout(jPanel_convertFile);
@@ -129,7 +138,7 @@ public class Pdf2Png extends JFrame
                 .addComponent(jButton_convertFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel_fileWarning)
-                .addContainerGap(342, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel_convertFileLayout.setVerticalGroup(
             jPanel_convertFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -193,10 +202,10 @@ public class Pdf2Png extends JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel_selectFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel_convertFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel_selectOutput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel_selectFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel_selectOutput, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel_convertFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -241,76 +250,141 @@ public class Pdf2Png extends JFrame
         );
     }
     
+    private void convert()
+    {
+        try
+        {
+            File file = new File(jTextField_pdfFile.getText());
+            
+            if(file.exists())
+            {
+                PDDocument document = PDDocument.load(file);
+                
+                PDFRenderer renderer = new PDFRenderer(document);
+                
+                int pageCount = document.getNumberOfPages();
+                
+                for(int page = 0; page < pageCount; page ++)
+                {
+                    BufferedImage image = renderer.renderImageWithDPI(page, RENDER_DPI);
+                    ImageIO.write(image, "PNG", new File(outputPath + "page_" + (page + 1) + ".png"));
+                }
+                
+                document.close();
+            }
+            else
+            {
+                Logger.log("ERROR: File '" + jTextField_pdfFile.getText() + "' does not exist.");
+            }
+        }
+        catch(IOException ex)
+        {
+            Logger.log("ERROR: Unable to open '" + jTextField_pdfFile.getText() + "' file.");
+        }
+    }
+    
     private void initialize()
     {
         jLabel_fileWarning.setVisible(false);
         
-        defaultPath = "";
+        selectPath = loadPath(SELECT_PATH_FILE);
+        outputPath = loadPath(OUTPUT_PATH_FILE);
+        
+        filePath = "";
+    }
+    
+    private String loadPath(String pathFile)
+    {
+        String path = "";
         
         BufferedReader reader;
         
         try
         {
-            reader = new BufferedReader(new FileReader(PATH_FILE));
-            defaultPath = reader.readLine();
+            reader = new BufferedReader(new FileReader(pathFile));
+            path = reader.readLine();
+            if(path == null)
+            {
+                path = "";
+            }
             reader.close();
         }
         catch(IOException ex)
         {
-            Logger.log("ERROR: Unable to open '" + PATH_FILE + "' file.");
+            Logger.log("ERROR: Unable to open '" + pathFile + "' file.");
         }
+        
+        return path;
     }
     
-    private void saveDefaultPath()
+    private void savePdfPath()
     {
-        defaultPath = "";
-        
         String[] pathTokens = jTextField_pdfFile.getText().split(Pattern.quote(FILE_SEPARATOR));
+        
+        selectPath = "";
         
         for(int i = 0; i < (pathTokens.length - 1); i ++)
         {
-            defaultPath += pathTokens[i];
-            defaultPath += FILE_SEPARATOR;
+            selectPath += pathTokens[i];
+            selectPath += FILE_SEPARATOR;
         }
         
         BufferedWriter writer;
         
         try
         {
-            writer = new BufferedWriter(new FileWriter(PATH_FILE));
-            writer.write(defaultPath);
+            writer = new BufferedWriter(new FileWriter(SELECT_PATH_FILE));
+            writer.write(selectPath);
             writer.close();
         }
         catch(IOException ex)
         {
-            Logger.log("Unable to open '" + PATH_FILE + "' file.");
+            Logger.log("ERROR: Unable to open '" + SELECT_PATH_FILE + "' file.");
         }
     }
     
-    private void jButton_selectFileActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton_selectFileActionPerformed
-    {//GEN-HEADEREND:event_jButton_selectFileActionPerformed
+    private void saveOutputPath()
+    {
+        BufferedWriter writer;
+        
+        try
+        {
+            writer = new BufferedWriter(new FileWriter(OUTPUT_PATH_FILE));
+            writer.write(outputPath);
+            writer.close();
+        }
+        catch(IOException ex)
+        {
+            Logger.log("ERROR: Unable to open '" + OUTPUT_PATH_FILE + "' file.");
+        }
+    }
+    
+    private void jButton_selectPdfFileActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton_selectPdfFileActionPerformed
+    {//GEN-HEADEREND:event_jButton_selectPdfFileActionPerformed
         jLabel_fileWarning.setVisible(false);
         
         JFileChooser fileChooser;
         
-        if(defaultPath.isEmpty())
+        if(selectPath.isEmpty())
         {
             fileChooser = new JFileChooser();
         }
         else
         {
-            fileChooser = new JFileChooser(defaultPath);
+            fileChooser = new JFileChooser(selectPath);
         }
         
         fileChooser.setDialogTitle("Select .pdf File");
 
         if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
         {
-            jTextField_pdfFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            filePath = fileChooser.getSelectedFile().getAbsolutePath();
             
-            saveDefaultPath();
+            jTextField_pdfFile.setText(filePath);
+            
+            savePdfPath();
         }
-    }//GEN-LAST:event_jButton_selectFileActionPerformed
+    }//GEN-LAST:event_jButton_selectPdfFileActionPerformed
 
     private void jButton_convertFileActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton_convertFileActionPerformed
     {//GEN-HEADEREND:event_jButton_convertFileActionPerformed
@@ -322,7 +396,7 @@ public class Pdf2Png extends JFrame
         }
         else
         {
-            // TODO - execute convert process
+            convert();
         }
     }//GEN-LAST:event_jButton_convertFileActionPerformed
 
@@ -335,13 +409,13 @@ public class Pdf2Png extends JFrame
     {//GEN-HEADEREND:event_jButton_selectPathActionPerformed
         JFileChooser fileChooser;
         
-        if(defaultPath.isEmpty())
+        if(outputPath.isEmpty())
         {
             fileChooser = new JFileChooser();
         }
         else
         {
-            fileChooser = new JFileChooser(defaultPath);
+            fileChooser = new JFileChooser(outputPath);
         }
         
         fileChooser.setDialogTitle("Select Output Directory");
@@ -350,14 +424,19 @@ public class Pdf2Png extends JFrame
 
         if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
         {
-            jTextField_outputPath.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            outputPath = fileChooser.getSelectedFile().getAbsolutePath();
+            outputPath += FILE_SEPARATOR;
+            
+            jTextField_outputPath.setText(outputPath);
+            
+            saveOutputPath();
         }
     }//GEN-LAST:event_jButton_selectPathActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton_convertFile;
-    private javax.swing.JButton jButton_selectFile;
     private javax.swing.JButton jButton_selectPath;
+    private javax.swing.JButton jButton_selectPdfFile;
     private javax.swing.JLabel jLabel_fileWarning;
     private javax.swing.JLabel jLabel_outputPath;
     private javax.swing.JLabel jLabel_pdfFile;
